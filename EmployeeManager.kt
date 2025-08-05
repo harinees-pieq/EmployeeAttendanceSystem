@@ -65,9 +65,14 @@ class EmployeeManager {
         department: String,
         reportingTo: String
     ): String {
-        val emp = employeeList.findById(id) ?: return "Employee not found."
-        emp.updateDetails(firstName, lastName, role, department, reportingTo)
-        return "Employee updated."
+        val emp = employeeList.findById(id) ?: return "Employee not found." 
+        val errorMessage = emp.updateDetails(firstName, lastName, role, department, reportingTo)
+
+        return if (errorMessage != null) {
+            "Update failed: $errorMessage"
+        } else {
+            "Employee updated."
+        }
     }
 
     // calls deleteEmployee from EmployeeList
