@@ -1,6 +1,4 @@
-import java.util.Locale
-
-class Employee(
+class Employee (
     firstName: String,
     lastName: String,
     roleInput: String,
@@ -15,25 +13,43 @@ class Employee(
     // every employee gets a unique ID
     val employeeId: String = generateId()
 
-    // validations
     init {
-        require(validateFirstName(firstName) == null) { "Invalid first name" }
         this.firstName = firstName
-
-        require(validateLastName(lastName) == null) { "Invalid last name" }
         this.lastName = lastName
-
-        require(validateRole(roleInput) == null) { "Invalid role provided." }
-        this.role = Role.valueOf(roleInput.uppercase(Locale.getDefault()))
-
-        require(validateDepartment(departmentInput) == null) { "Invalid department provided." }
-        this.department = Department.valueOf(departmentInput.uppercase(Locale.getDefault()))
-
-        require(validateReportingTo(reportingTo) == null) { "Invalid reporting manager" }
+        this.role = Role.valueOf(roleInput.uppercase())
+        this.department = Department.valueOf(departmentInput.uppercase())
     }
 
     companion object {
         private var counter = 0
+
+        fun create(
+            firstName: String,
+            lastName: String,
+            roleInput: String,
+            departmentInput: String,
+            reportingTo: String
+        ): Pair<Employee?, String?> {
+
+            val firstNameError = validateFirstName(firstName)
+            if (firstNameError != null) return Pair(null, firstNameError)
+
+            val lastNameError = validateLastName(lastName)
+            if (lastNameError != null) return Pair(null, lastNameError)
+
+            val roleError = validateRole(roleInput)
+            if (roleError != null) return Pair(null, roleError)
+
+            val departmentError = validateDepartment(departmentInput)
+            if (departmentError != null) return Pair(null, departmentError)
+
+            val reportingToError = validateReportingTo(reportingTo)
+            if (reportingToError != null) return Pair(null, reportingToError)
+
+            val emp = Employee(firstName, lastName, roleInput, departmentInput, reportingTo)
+            return Pair(emp, null)
+        }
+
 
         // generates a new ID
         fun generateId(): String {
@@ -43,7 +59,7 @@ class Employee(
 
         fun validateRole(roleStr: String): String? {
             return try {
-                Role.valueOf(roleStr.trim().uppercase(Locale.getDefault()))
+                Role.valueOf(roleStr.trim().uppercase())
                 null
             } catch (e: IllegalArgumentException) {
                 "Invalid role. Must be one of: ${Role.entries.joinToString()}"
@@ -52,7 +68,7 @@ class Employee(
 
         fun validateDepartment(deptStr: String): String? {
             return try {
-                Department.valueOf(deptStr.trim().uppercase(Locale.getDefault()))
+                Department.valueOf(deptStr.trim().uppercase())
                 null
             } catch (e: IllegalArgumentException) {
                 "Invalid department. Must be one of: ${Department.entries.joinToString()}"
@@ -83,18 +99,30 @@ class Employee(
         roleInput: String,
         departmentInput: String,
         reportingTo: String
-    ) {
-        require(validateFirstName(firstName) == null) { "Invalid first name" }
-        require(validateLastName(lastName) == null) { "Invalid last name" }
-        require(validateRole(roleInput) == null) { "Invalid role" }
-        require(validateDepartment(departmentInput) == null) { "Invalid department" }
-        require(validateReportingTo(reportingTo) == null) { "Invalid reporting manager" }
+    ): String? {
+
+        val firstNameError = validateFirstName(firstName)
+        if (firstNameError != null) return firstNameError
+
+        val lastNameError = validateLastName(lastName)
+        if (lastNameError != null) return lastNameError
+
+        val roleError = validateRole(roleInput)
+        if (roleError != null) return roleError
+
+        val departmentError = validateDepartment(departmentInput)
+        if (departmentError != null) return departmentError
+
+        val reportingToError = validateReportingTo(reportingTo)
+        if (reportingToError != null) return reportingToError
 
         this.firstName = firstName
         this.lastName = lastName
-        this.role = Role.valueOf(roleInput.uppercase(Locale.getDefault()))
-        this.department = Department.valueOf(departmentInput.uppercase(Locale.getDefault()))
+        this.role = Role.valueOf(roleInput.uppercase())
+        this.department = Department.valueOf(departmentInput.uppercase())
         this.reportingTo = reportingTo
+
+        return null // success
     }
 
     // returns the employee info as a string
