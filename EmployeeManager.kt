@@ -48,9 +48,12 @@ class EmployeeManager {
 
     // calls addEmployee from EmployeeList
     fun addEmployee(firstName: String, lastName: String, role: String, department: String, reportingTo: String): String {
-        val emp = Employee(firstName, lastName, role, department, reportingTo)
-        employeeList.addEmployee(emp)
-        return "Employee added: ${emp.employeeId}"
+        val (employee, errorMessage) = Employee.create(firstName, lastName, role, department, reportingTo)
+        if (errorMessage != null) {
+            return "Error: $errorMessage"
+        }
+        employeeList.addEmployee(employee!!)
+        return "Employee added: ${employee.employeeId}"
     }
 
     // calls updateDetails from Employee
