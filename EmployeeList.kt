@@ -32,5 +32,4 @@ class EmployeeList : ArrayList<Employee>() {
         if (this.isEmpty()) return "No employees found."
         return this.joinToString(separator = "\n") { it.toString() }
     }
-
 }
