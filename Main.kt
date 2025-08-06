@@ -9,24 +9,23 @@ val manager = EmployeeManager()
 fun main() {
     while (true) {
         println(
-            "\nMenu:\n1. Add Employee\n2. Update Employee\n3. Delete Employee\n4. List Employees" +
-                    "\n5. Check-In\n6. Check-Out\n7. View All Attendance" +
-                    "\n8. View Attendance by Date\n9. View Working Hours Summary By Date" +
-                    "\n10. View Currently Checked-In Employees\n11. Exit\n"
+            "\nMenu:\n1. Add Employee\n2. Delete Employee\n3. List Employees" +
+                    "\n4. Check-In\n5. Check-Out\n6. View All Attendance" +
+                    "\n7. View Attendance by Date\n8. View Working Hours Summary By Date" +
+                    "\n9. View Currently Checked-In Employees\n10. Exit\n"
         )
 
         when (prompt("Enter your choice: ")) {
             "1" -> addEmployee()
-            "2" -> updateEmployee()
-            "3" -> deleteEmployee()
-            "4" -> listEmployees()
-            "5" -> checkIn()
-            "6" -> checkOut()
-            "7" -> viewAllAttendance()
-            "8" -> viewAttendanceByDate()
-            "9" -> viewWorkingHoursSummary()
-            "10" -> viewCurrentlyCheckedIn()
-            "11" -> {
+            "2" -> deleteEmployee()
+            "3" -> listEmployees()
+            "4" -> checkIn()
+            "5" -> checkOut()
+            "6" -> viewAllAttendance()
+            "7" -> viewAttendanceByDate()
+            "8" -> viewWorkingHoursSummary()
+            "9" -> viewCurrentlyCheckedIn()
+            "10" -> {
                 println("Exiting...")
                 return
             }
@@ -48,52 +47,37 @@ fun addEmployee() {
     val role = prompt("Enter role (INTERN, DEVELOPER, MANAGER, HR, QA): ")
     val dept = prompt("Enter department (IT, ADMIN, SALES, MARKETING): ")
     val reportingTo = prompt("Enter reporting manager ID: ")
-    println(manager.addEmployee(firstName, lastName, role, dept, reportingTo))
-}
-
-// gets input to update and calls updateEmployee from EmployeeManager
-fun updateEmployee() {
-    val id = prompt("Enter Employee ID to update: ")
-    val firstName = prompt("Enter new first name: ")
-    val lastName = prompt("Enter new last name: ")
-    val role = prompt("Enter new role (INTERN, DEVELOPER, MANAGER, HR, QA): ")
-    val dept = prompt("Enter new department (IT, ADMIN, SALES, MARKETING): ")
-    val reportingTo = prompt("Enter new reporting manager ID: ")
-    println(manager.updateEmployee(id, firstName, lastName, role, dept, reportingTo))
+    println(manager.handleAddEmployee(firstName, lastName, role, dept, reportingTo))
 }
 
 // get id to delete and calls deleteEmployee from EmployeeManager
 fun deleteEmployee() {
     val id = prompt("Enter Employee ID to delete: ")
-    println(manager.deleteEmployee(id))
+    println(manager.handleDeleteEmployee(id))
 }
 
 // gets list and prints
 fun listEmployees() {
-    manager.listEmployees().forEach { println(it) }
+    manager.handleListEmployees().forEach { println(it) }
 }
 
 // calls checkIn from EmployeeManager
 fun checkIn() {
     val id = prompt("Enter Employee ID: ")
     val dateTime = parseDateTimeOrNow("Enter check-in time (dd-MM-yyyy HH:mm) or leave blank: ")
-    println(manager.checkIn(id, dateTime))
+    println(manager.handleCheckIn(id, dateTime))
 }
 
 // calls checkOut from EmployeeManager
 fun checkOut() {
     val id = prompt("Enter Employee ID: ")
-    if (!Employee.isValidEmployeeId(id)) {
-        println("Invalid Employee ID format.")
-        return
-    }
     val dateTime = parseDateTimeOrNow("Enter check-out time (dd-MM-yyyy HH:mm) or leave blank: ")
-    println(manager.checkOut(id, dateTime))
+    println(manager.handleCheckOut(id, dateTime))
 }
 
 // viewAttendance will be printed
 fun viewAllAttendance() {
-    manager.viewAttendance().forEach { println(it) }
+    manager.handleViewAttendance().forEach { println(it) }
 }
 
 // viewAttendanceByDate will be printed
@@ -102,7 +86,7 @@ fun viewAttendanceByDate() {
     val toDate = parseDateOnly("Enter end date (dd-MM-yyyy): ")
     val from = fromDate.atStartOfDay()
     val to = toDate.atTime(23, 59, 59)
-    manager.viewAttendanceByDate(from, to).forEach { println(it) }
+    manager.handleViewAttendanceByDate(from, to).forEach { println(it) }
 }
 
 // viewWorkingHoursSummaryByDate will be called
@@ -112,20 +96,16 @@ fun viewWorkingHoursSummary() {
     val from = fromDate.atStartOfDay()
     val to = toDate.atTime(23, 59, 59)
 
-    val summary = manager.viewWorkingHoursSummaryByDate(from, to)
+    val summaryString = manager.handleViewWorkingHoursSummaryByDate(from, to)
 
-    if (summary.isEmpty()) {
-        println("No data found.")
-    } else {
-        println("\n%-10s %-20s %-10s".format("Emp ID", "Name", "Total Hours"))
-        summary.forEach(::println)
-    }
+    println()
+    println(summaryString)
 }
 
 // checked in and not yet checked out
 fun viewCurrentlyCheckedIn() {
     println("\n%-10s %-20s".format("Emp ID", "Name"))
-    manager.viewCurrentlyCheckedInEmployees().forEach { println(it) }
+    manager.handleViewCurrentlyCheckedInEmployees().forEach { println(it) }
 }
 
 // parser for datetime
