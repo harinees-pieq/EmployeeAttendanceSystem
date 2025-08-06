@@ -39,6 +39,11 @@ class Attendance(
         return null
     }
 
+    // checks within the date
+    fun isWithin(dateFrom: LocalDateTime, dateTo: LocalDateTime): Boolean {
+        return !checkInDateTime.isBefore(dateFrom) && !checkInDateTime.isAfter(dateTo)
+    }
+
     // prints in a format
     override fun toString(): String {
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
@@ -56,10 +61,5 @@ class Attendance(
                 append(" | Working Hours: $workingHoursStr")
             }
         }
-    }
-
-    // checks within the date
-    fun isWithin(dateFrom: LocalDateTime, dateTo: LocalDateTime): Boolean {
-        return !checkInDateTime.isBefore(dateFrom) && !checkInDateTime.isAfter(dateTo)
     }
 }
