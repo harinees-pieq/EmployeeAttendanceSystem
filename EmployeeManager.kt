@@ -47,8 +47,6 @@ class EmployeeManager {
     }
 
     // calls addEmployee from EmployeeList
-    // --- In EmployeeManager.kt ---
-
     fun handleAddEmployee(firstName: String, lastName: String, role: String, department: String, reportingTo: String): String {
         return try {
             val newEmployee = Employee(
@@ -119,3 +117,4 @@ class EmployeeManager {
         } // formats with neat spacing
     }
 }
+
