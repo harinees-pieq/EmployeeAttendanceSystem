@@ -32,7 +32,7 @@ class AttendanceList : ArrayList<Attendance>() {
     }
 
     // check-out for an employee
-    fun checkOut(employeeId: String, checkOutTime: LocalDateTime = LocalDateTime.now()): String? {
+    fun validateCheckOut(employeeId: String, checkOutTime: LocalDateTime = LocalDateTime.now()): String? {
         val record = this.findLast { it.employeeId == employeeId && it.checkOutDateTime == null }
             ?: return "No active check-in found."
 
@@ -53,33 +53,61 @@ class AttendanceList : ArrayList<Attendance>() {
     fun getByDateRange(from: LocalDateTime, to: LocalDateTime): List<Attendance> =
         this.filter { it.isWithin(from, to) }
 
-    // sum working hours of employee based on date
-    fun getWorkingHoursSummaryByDate(from: LocalDateTime, to: LocalDateTime, employeeList: List<Employee>): List<String> {
-        val filtered = this.filter { att ->
-            att.checkOutDateTime != null &&
-                    !att.checkInDateTime.isBefore(from) &&
-                    !att.checkInDateTime.isAfter(to)
+    fun getWorkingHoursSummaryByDate(
+        from: LocalDateTime,
+        to: LocalDateTime,
+        employeeList: List<Employee>
+    ): String {
+
+        val employeeIdSorter = Comparator<String> { id1, id2 ->
+            val num1 = id1.substringAfter("PIEQ").toIntOrNull() ?: 0
+            val num2 = id2.substringAfter("PIEQ").toIntOrNull() ?: 0
+            num1.compareTo(num2)
         }
 
-        if (filtered.isEmpty()) {
-            return emptyList()
+        val sortedList = this.sortedWith(compareBy(employeeIdSorter) { it.employeeId })
+
+        if (sortedList.isEmpty()) {
+            return "No data found."
         }
 
-        val summaryMap = mutableMapOf<String, Long>()
-        for (record in filtered) {
-            val minutes = Duration.between(record.checkInDateTime, record.checkOutDateTime!!).toMinutes()
-            summaryMap[record.employeeId] = summaryMap.getOrDefault(record.employeeId, 0) + minutes
+        val resultBuilder = StringBuilder()
+        resultBuilder.append("%-10s %-20s %-10s\n".format("Emp ID", "Name", "Total Hours"))
+
+        var currentEmpId: String? = null
+        var currentEmpName: String = "Unknown"
+        var currentTotalMinutes: Long = 0
+
+        for (record in sortedList) {
+            if (record.employeeId != currentEmpId) {
+                if (currentEmpId != null) {
+                    val hours = currentTotalMinutes / 60
+                    val rem = currentTotalMinutes % 60
+                    val formattedHours = String.format("%02d:%02d", hours, rem)
+                    resultBuilder.append("%-10s %-20s %-10s\n".format(currentEmpId, currentEmpName, formattedHours))
+                }
+
+                currentEmpId = record.employeeId
+                currentEmpName = employeeList.find { it.employeeId == currentEmpId }
+                    ?.let { "${it.firstName} ${it.lastName}" } ?: "Unknown"
+                currentTotalMinutes = 0
+            }
+
+            val checkOut = record.checkOutDateTime
+            if (checkOut != null && record.isWithin(from, to)) {
+                val minutes = Duration.between(record.checkInDateTime, checkOut).toMinutes()
+                currentTotalMinutes += minutes
+            }
         }
 
-        val result = mutableListOf<String>()
-        for ((empId, totalMinutes) in summaryMap) {
-            val employee = employeeList.find { it.employeeId == empId }
-            val name = employee?.let { "${it.firstName} ${it.lastName}" } ?: "Unknown"
-            val hours = totalMinutes / 60
-            val rem = totalMinutes % 60
-            result.add("%-10s %-20s %-10s".format(empId, name, "$hours:$rem"))
+        if (currentEmpId != null) {
+            val hours = currentTotalMinutes / 60
+            val rem = currentTotalMinutes % 60
+            val formattedHours = String.format("%02d:%02d", hours, rem)
+            resultBuilder.append("%-10s %-20s %-10s\n".format(currentEmpId, currentEmpName, formattedHours))
         }
-            return result
+
+        return resultBuilder.toString()
     }
 
     // returns checked in without checked out
@@ -87,6 +115,11 @@ class AttendanceList : ArrayList<Attendance>() {
         return this.filter { it.checkOutDateTime == null }
             .map { it.employeeId }
             .distinct()
+    }
+
+    // delete attendance records of deleted employee
+    fun deleteRecordsForEmployee(employeeId: String) {
+        this.removeIf { it.employeeId == employeeId }
     }
 
     // prints in a format
