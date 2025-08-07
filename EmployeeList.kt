@@ -2,12 +2,6 @@ class EmployeeList : ArrayList<Employee>() {
 
     // adds employee
     fun addEmployee(emp: Employee): String? {
-        if (emp.employeeId.isBlank()) {
-            return "Employee ID cannot be blank."
-        }
-        if (this.any { it.employeeId == emp.employeeId }) {
-            return "Employee with ID ${emp.employeeId} already exists."
-        }
         super.add(emp)
         return null
     }
